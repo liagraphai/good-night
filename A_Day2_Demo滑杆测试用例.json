@@ -1,0 +1,76 @@
+{
+  "case_id": "demo_xiaolin_slider_sleep_review_001",
+  "case_name": "小林睡前体感复盘 - 滑杆版",
+  "purpose": "用于测试晚安体感 Prompt v2、滑杆输入、AI 洞察接口、结果页展示和黑屏睡眠模式。",
+  "user_story": {
+    "name": "小林",
+    "age": 26,
+    "profile": "互联网运营",
+    "time": "23:48",
+    "scene": "小林已经躺在床上，本来想睡觉，但刷了 40 分钟手机。她今天工作节奏很乱，下午连续开会，晚饭吃得比较晚。身体很累，但脑子还在转。"
+  },
+  "test_input": {
+    "voice_reflection_text": "今天下午开会很烦，晚上胃有点胀，肩颈也紧。回家后刷了很久手机，感觉明明很累，但脑子停不下来。",
+    "slider_input": {
+      "emotion": {
+        "calm_excited": 72,
+        "sad_happy": 38,
+        "relaxed_stressed": 81
+      },
+      "body": {
+        "head_clear_heavy": 64,
+        "neck_relaxed_tense": 82,
+        "limbs_warm_weak": 58
+      },
+      "behavior": {
+        "sedentary_active": 24,
+        "phone_social": 18,
+        "chaotic_rhythmic": 31
+      }
+    },
+    "wearable_data": {
+      "steps": 3200,
+      "stress": 78,
+      "heart_rate": 86,
+      "last_sleep_hours": 5.8
+    }
+  },
+  "expected_output_direction": {
+    "one_sentence_summary": "你今晚更像是身体已经很累，但脑子还没有完全下班。",
+    "emotion_weather": "阴天偏紧绷",
+    "body_signals": [
+      "肩颈紧",
+      "胃部不适",
+      "头部沉重"
+    ],
+    "behavior_clues": "今天久坐和刷手机偏多，可能让睡前更难从高刺激状态降下来。",
+    "data_clues": "步数偏低、压力值偏高，加上昨晚睡眠不足，今晚更适合低刺激收尾。",
+    "insight": "你的滑杆显示压力偏高、活动偏少，语音里也提到胃胀和肩颈紧。今晚的问题不一定是“不想睡”，更像是身体已经疲惫，但注意力还停在屏幕和白天的事情上。",
+    "tonight_action": "把手机屏幕扣下，做 90 秒缓慢呼吸，让肩颈先松一点。",
+    "sleep_closing_script": "今天已经到这里了。你不需要在今晚把所有事情想清楚，也不需要继续证明自己做得够多。先把手机轻轻扣下，让肩颈慢慢松一点，让胃部也有一点安静的时间。明天的事，明天再接住。今晚只需要呼吸几次，然后允许自己休息。"
+  },
+  "test_assertions": [
+    "AI 返回必须是合法 JSON。",
+    "返回字段必须包含 one_sentence_summary、emotion_weather、body_signals、behavior_clues、data_clues、insight、tonight_action、sleep_closing_script。",
+    "body_signals 必须是数组，建议包含 2-3 个身体信号。",
+    "tonight_action 只能包含 1 个低负担睡前动作。",
+    "sleep_closing_script 应适合 30-60 秒语音播放。",
+    "输出不能包含医疗诊断、药物建议或疾病判断。",
+    "结果页应能展示前 7 个字段，黑屏页应能读取 sleep_closing_script。",
+    "当 voice_reflection_text 为空时，接口仍应能根据 slider_input 和 wearable_data 返回结果。"
+  ],
+  "frontend_demo_notes": {
+    "default_text": "可将 voice_reflection_text 作为 Demo 默认语音转文字文案。",
+    "default_sliders": "滑杆页可预设 test_input.slider_input 中的 9 个数值。",
+    "default_wearable_data": "数据页可展示 steps、stress、heart_rate、last_sleep_hours。",
+    "result_page": "结果页展示 one_sentence_summary、emotion_weather、body_signals、behavior_clues、data_clues、insight、tonight_action。",
+    "sleep_mode": "黑屏页展示或播放 sleep_closing_script。"
+  },
+  "engineering_test_notes": {
+    "api": "POST /api/insight",
+    "request_body": "使用 test_input 作为请求体。",
+    "success_condition": "接口返回字段完整、JSON 可解析、内容语气符合睡前健康洞察定位。",
+    "fallback_condition": "AI 超时、非 JSON、字段缺失时，使用 expected_output_direction 作为新版 fallback mock。",
+    "empty_voice_case": "将 voice_reflection_text 设置为空字符串，测试仅滑杆和数据输入时是否仍能生成洞察。"
+  }
+}
