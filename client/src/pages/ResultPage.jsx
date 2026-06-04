@@ -1,6 +1,6 @@
 /**
  * 结果页 - Day 2 步骤 6
- * 新增：整体体感一句话 + 行为线索卡片
+ * 玻璃态分色卡片 + 错开入场动画
  */
 export default function ResultPage({ result, loading, onSleep, onBack }) {
   if (loading) {
@@ -31,7 +31,7 @@ export default function ResultPage({ result, loading, onSleep, onBack }) {
       </div>
 
       <div className="page-content">
-        {/* 整体体感一句话（Day 2 新增） */}
+        {/* 整体体感一句话 */}
         {result.one_sentence_summary && (
           <div className="summary-banner">
             <p className="summary-text">{result.one_sentence_summary}</p>
@@ -43,14 +43,14 @@ export default function ResultPage({ result, loading, onSleep, onBack }) {
           <p className="insight-text">{result.insight}</p>
         </div>
 
-        {/* 卡片组 */}
+        {/* 卡片组 — 分色 + 错开入场 */}
         <div className="result-cards">
-          <div className="result-card card-emotion">
+          <div className="result-card card-emotion" style={{ animationDelay: '0.1s' }}>
             <h4>🌤 情绪天气</h4>
             <p>{result.emotion_weather}</p>
           </div>
 
-          <div className="result-card card-body">
+          <div className="result-card card-body" style={{ animationDelay: '0.2s' }}>
             <h4>🫀 身体信号</h4>
             <div className="body-signals">
               {result.body_signals?.map((signal, i) => (
@@ -59,20 +59,19 @@ export default function ResultPage({ result, loading, onSleep, onBack }) {
             </div>
           </div>
 
-          {/* 行为线索（Day 2 新增） */}
           {result.behavior_clues && (
-            <div className="result-card card-behavior">
+            <div className="result-card card-behavior" style={{ animationDelay: '0.3s' }}>
               <h4>📱 行为线索</h4>
               <p>{result.behavior_clues}</p>
             </div>
           )}
 
-          <div className="result-card card-data">
+          <div className="result-card card-data" style={{ animationDelay: '0.4s' }}>
             <h4>📊 数据线索</h4>
             <p>{result.data_clues}</p>
           </div>
 
-          <div className="result-card card-action">
+          <div className="result-card card-action" style={{ animationDelay: '0.5s' }}>
             <h4>🌙 今晚微行动</h4>
             <p>{result.tonight_action}</p>
           </div>

@@ -131,7 +131,7 @@ export default function SlidersPage({ value, onChange, onNext, onBack }) {
                       value={val}
                       onChange={(e) => handleSliderChange(groupKey, slider.key, e.target.value)}
                       className="slider-range"
-                      style={{ accentColor: group.color }}
+                      style={{ '--slider-fill': `${val}%` }}
                     />
                   </div>
                 );

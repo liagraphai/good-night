@@ -1,15 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { ParticlesProvider } from '@tsparticles/react';
+import { loadSlim } from '@tsparticles/slim';
+import { loadEmittersPlugin } from '@tsparticles/plugin-emitters';
+import { loadTrailPlugin } from '@tsparticles/plugin-trail';
 import HomePage from './pages/HomePage';
 import TextInputPage from './pages/TextInputPage';
 import SlidersPage from './pages/SlidersPage';
 import DataPage from './pages/DataPage';
 import ResultPage from './pages/ResultPage';
 import SleepPage from './pages/SleepPage';
+import StarrySky from './components/StarrySky';
 import { fetchInsight } from './services/api';
 import { saveSession, loadSession, clearSession } from './services/storage';
 import { DEFAULT_WEARABLE_DATA } from './services/demoData';
 import { switchPage, playTransitionSound } from './services/audio';
 import './App.css';
+
+// 粒子引擎初始化回调（必须稳定引用）
+const particlesInit = async (engine) => {
+  await loadSlim(engine);
+  await loadEmittersPlugin(engine);
+  await loadTrailPlugin(engine);
+};
 
 /**
  * 晚安体感 - 主应用（Day 2 滑杆版）
@@ -102,60 +114,90 @@ export default function App() {
     setCurrentPage(page);
   };
 
+  // 进度指示器页面列表
+  const FLOW_PAGES = ['textInput', 'sliders', 'data', 'result'];
+  const pageIndex = FLOW_PAGES.indexOf(currentPage);
+
   return (
-    <div className="app">
-      {currentPage !== 'home' && currentPage !== 'sleep' && (
-        <button className="btn-reset" onClick={handleReset} title="重置Demo">
-          🔄
-        </button>
-      )}
+    <ParticlesProvider init={particlesInit}>
+      <div className={`app page-${currentPage}`}>
+        <StarrySky />
 
-      {currentPage === 'home' && (
-        <HomePage onStart={handleStartWithAudio} />
-      )}
+        {/* 氛围装饰层 */}
+        {currentPage !== 'sleep' && (
+          <div className="ambient-decor" aria-hidden="true">
+            <div className="ambient-orb" />
+            <div className="ambient-orb" />
+            <div className="ambient-orb" />
+            <div className="ambient-nebula" />
+          </div>
+        )}
 
-      {currentPage === 'textInput' && (
-        <TextInputPage
-          value={voiceText}
-          onChange={setVoiceText}
-          onNext={() => goTo('sliders')}
-          onBack={() => goTo('home')}
-        />
-      )}
+        {/* 进度指示器 */}
+        {pageIndex >= 0 && (
+          <div className="progress-indicator">
+            {FLOW_PAGES.map((_, i) => (
+              <span
+                key={i}
+                className={`progress-dot ${i < pageIndex ? 'completed' : ''} ${i === pageIndex ? 'active' : ''}`}
+              />
+            ))}
+          </div>
+        )}
 
-      {currentPage === 'sliders' && (
-        <SlidersPage
-          value={sliderInput}
-          onChange={setSliderInput}
-          onNext={() => goTo('data')}
-          onBack={() => goTo('textInput')}
-        />
-      )}
+        {currentPage !== 'home' && currentPage !== 'sleep' && (
+          <button className="btn-reset" onClick={handleReset} title="重置Demo">
+            🔄
+          </button>
+        )}
 
-      {currentPage === 'data' && (
-        <DataPage
-          value={wearableData}
-          onChange={setWearableData}
-          onNext={handleGenerate}
-          onBack={() => goTo('sliders')}
-        />
-      )}
+        {currentPage === 'home' && (
+          <HomePage onStart={handleStartWithAudio} />
+        )}
 
-      {currentPage === 'result' && (
-        <ResultPage
-          result={result}
-          loading={loading}
-          onSleep={() => goTo('sleep')}
-          onBack={() => goTo('data')}
-        />
-      )}
+        {currentPage === 'textInput' && (
+          <TextInputPage
+            value={voiceText}
+            onChange={setVoiceText}
+            onNext={() => goTo('sliders')}
+            onBack={() => goTo('home')}
+          />
+        )}
 
-      {currentPage === 'sleep' && (
-        <SleepPage
-          script={result?.sleep_closing_script}
-          onExit={handleReset}
-        />
-      )}
-    </div>
+        {currentPage === 'sliders' && (
+          <SlidersPage
+            value={sliderInput}
+            onChange={setSliderInput}
+            onNext={() => goTo('data')}
+            onBack={() => goTo('textInput')}
+          />
+        )}
+
+        {currentPage === 'data' && (
+          <DataPage
+            value={wearableData}
+            onChange={setWearableData}
+            onNext={handleGenerate}
+            onBack={() => goTo('sliders')}
+          />
+        )}
+
+        {currentPage === 'result' && (
+          <ResultPage
+            result={result}
+            loading={loading}
+            onSleep={() => goTo('sleep')}
+            onBack={() => goTo('data')}
+          />
+        )}
+
+        {currentPage === 'sleep' && (
+          <SleepPage
+            script={result?.sleep_closing_script}
+            onExit={handleReset}
+          />
+        )}
+      </div>
+    </ParticlesProvider>
   );
 }

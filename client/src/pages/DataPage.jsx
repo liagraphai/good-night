@@ -2,7 +2,7 @@ import { DEFAULT_WEARABLE_DATA, WEARABLE_LABELS } from '../services/demoData';
 
 /**
  * 数据页 - 步骤 4
- * 展示模拟可穿戴数据
+ * 展示模拟可穿戴数据（玻璃态卡片 + 入场动画）
  */
 export default function DataPage({ value, onChange, onNext, onBack }) {
   const data = value || DEFAULT_WEARABLE_DATA;
@@ -23,11 +23,15 @@ export default function DataPage({ value, onChange, onNext, onBack }) {
         <p className="page-hint">以下是你今天的身体数据（模拟）</p>
 
         <div className="data-cards">
-          {Object.entries(data).map(([key, val]) => {
+          {Object.entries(data).map(([key, val], index) => {
             const meta = WEARABLE_LABELS[key];
             if (!meta) return null;
             return (
-              <div key={key} className="data-card">
+              <div
+                key={key}
+                className="data-card"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <span className="data-icon">{meta.icon}</span>
                 <span className="data-label">{meta.label}</span>
                 <span className="data-value">
