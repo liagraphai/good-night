@@ -18,15 +18,14 @@ export async function generateSpeech(text) {
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-preview-tts',
-    contents: `请用非常轻柔、缓慢、温暖的语气朗读以下文字，像是在深夜轻声对一个即将入睡的人说话：
-
-${text}`,
+    systemInstruction: '你是一个温柔的晚安陪伴者。请用非常轻柔、缓慢、温暖的语气朗读文字，像是在深夜轻声对一个即将入睡的人说话。语速要慢，声音要轻柔，带有关怀和安抚的感觉。',
+    contents: text,
     config: {
       responseModalities: ['AUDIO'],
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
-            voiceName: 'Zephyr' // 轻柔温暖的声音
+            voiceName: 'Kore' // 温柔轻柔的女声
           }
         }
       }

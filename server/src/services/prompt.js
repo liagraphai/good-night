@@ -92,7 +92,7 @@ ${formatWearableData(wearable_data)}
 }
 
 /**
- * 格式化可穿戴数据
+ * 格式化可穿戴数据（支持传统手环 + M5StopWatch 硬件传感器）
  */
 function formatWearableData(data) {
   if (!data || Object.keys(data).length === 0) {
@@ -100,10 +100,18 @@ function formatWearableData(data) {
   }
 
   const parts = [];
+
+  // 传统手环数据
   if (data.steps !== undefined) parts.push(`步数 ${data.steps}`);
   if (data.stress !== undefined) parts.push(`压力值 ${data.stress}`);
   if (data.heart_rate !== undefined) parts.push(`心率 ${data.heart_rate}`);
   if (data.last_sleep_hours !== undefined) parts.push(`昨晚睡眠 ${data.last_sleep_hours} 小时`);
+
+  // M5StopWatch 硬件传感器数据
+  if (data.noise_level !== undefined) parts.push(`环境噪音 ${data.noise_level}/100`);
+  if (data.activity !== undefined) parts.push(`活动量 ${data.activity}G`);
+  if (data.device_state !== undefined) parts.push(`设备状态 ${data.device_state}`);
+  if (data.source === 'hardware') parts.push('（来自实时硬件传感器）');
 
   return parts.join('、') || '（无数据）';
 }

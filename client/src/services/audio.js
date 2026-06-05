@@ -344,12 +344,22 @@ export function startClosingAccompaniment() {
 }
 
 /**
- * TTS 加载期间的疗愈过渡音乐 — 极缓慢的小雨
- * 低频滤波噪音 + 非常慢的 LFO 起伏
+ * TTS 加载期间 + 播放期间的持续雨声
+ * 音量更明显，在 TTS 语音播放时自动降低但不消失
  * 返回 stop 函数
  */
 export function startLoadingMusic() {
+  // 确保 audioCtx 存在且活跃
+  if (!audioCtx) {
+    initAudio();
+  }
   if (!audioCtx) return () => {};
+  // 强制恢复挂起的上下文（浏览器自动挂起策略）
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  console.log('🌧️ 雨声启动, audioCtx.state:', audioCtx.state);
 
   const now = audioCtx.currentTime;
 
@@ -358,29 +368,48 @@ export function startLoadingMusic() {
   const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * 0.3;
+    data[i] = (Math.random() * 2 - 1) * 0.5;
   }
 
-  // 主雨声：低中频，像雨落在窗外远处
+  // 主雨声
   const rainSource = audioCtx.createBufferSource();
   rainSource.buffer = buffer;
   rainSource.loop = true;
 
   const filter = audioCtx.createBiquadFilter();
   filter.type = 'bandpass';
-  filter.frequency.value = 3000;
-  filter.Q.value = 0.2; // 更宽频带，更自然
+  filter.frequency.value = 2500;
+  filter.Q.value = 0.15; // 宽频带，更自然
+
+  // 第二层：高频细雨滴
+  const dripsSource = audioCtx.createBufferSource();
+  dripsSource.buffer = buffer;
+  dripsSource.loop = true;
+
+  const highFilter = audioCtx.createBiquadFilter();
+  highFilter.type = 'highpass';
+  highFilter.frequency.value = 5000;
+  highFilter.Q.value = 0.3;
+
+  const dripsGain = audioCtx.createGain();
+  dripsGain.gain.setValueAtTime(0, now);
+  dripsGain.gain.linearRampToValueAtTime(0.04, now + 2);
+
+  dripsSource.connect(highFilter);
+  highFilter.connect(dripsGain);
+  dripsGain.connect(audioCtx.destination);
+  dripsSource.start(now);
 
   const rainGain = audioCtx.createGain();
   rainGain.gain.setValueAtTime(0, now);
-  rainGain.gain.linearRampToValueAtTime(0.07, now + 3); // 更慢渐入
+  rainGain.gain.linearRampToValueAtTime(0.2, now + 2); // 更大音量，明显的雨声
 
-  // LFO：非常缓慢的起伏（12秒一个周期）
+  // LFO：缓慢起伏
   const lfo = audioCtx.createOscillator();
   const lfoGain = audioCtx.createGain();
   lfo.type = 'sine';
-  lfo.frequency.value = 0.08; // 12秒周期
-  lfoGain.gain.value = 0.025;
+  lfo.frequency.value = 0.06; // ~16秒周期
+  lfoGain.gain.value = 0.04;
   lfo.connect(lfoGain);
   lfoGain.connect(rainGain.gain);
   lfo.start(now);
@@ -392,11 +421,13 @@ export function startLoadingMusic() {
 
   return () => {
     const stopTime = audioCtx.currentTime;
-    rainGain.gain.linearRampToValueAtTime(0, stopTime + 2.5);
+    rainGain.gain.linearRampToValueAtTime(0, stopTime + 3);
+    dripsGain.gain.linearRampToValueAtTime(0, stopTime + 3);
     setTimeout(() => {
       try { rainSource.stop(); } catch (e) { /* */ }
+      try { dripsSource.stop(); } catch (e) { /* */ }
       try { lfo.stop(); } catch (e) { /* */ }
-    }, 2800);
+    }, 3500);
   };
 }
 
